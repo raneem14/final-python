@@ -19,5 +19,30 @@ bluePrint = Blueprint('api', __name__, url_prefix='/api')
 api = Api(bluePrint, doc='/doc', title='Sample Flask-RestPlus Application')
 app.register_blueprint(bluePrint)
 
-# ✅ init extensions AFTER app is created
-db.init_app(app_
+# init extensions AFTER app is created
+db.init_app(app)
+ma.init_app(app)
+
+# Namespaces
+api.add_namespace(item_ns)
+api.add_namespace(items_ns)
+api.add_namespace(store_ns)
+api.add_namespace(stores_ns)
+
+# Create tables on first request
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+@api.errorhandler(ValidationError)
+def handle_validation_error(error):
+    return jsonify(error.messages), 400
+
+# Routes
+item_ns.add_resource(Item, '/<int:id>')
+items_ns.add_resource(ItemList, "")
+store_ns.add_resource(Store, '/<int:id>')
+stores_ns.add_resource(StoreList, "")
+
+if __name__ == '__main__':
+    app.run(port=5000, debug=True, host='0.0.0.0')
