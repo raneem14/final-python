@@ -19,20 +19,19 @@ bluePrint = Blueprint('api', __name__, url_prefix='/api')
 api = Api(bluePrint, doc='/doc', title='Sample Flask-RestPlus Application')
 app.register_blueprint(bluePrint)
 
-# init extensions AFTER app is created
+# init extensions
 db.init_app(app)
 ma.init_app(app)
+
+# ✅ צור את הטבלאות מיד כשעולה האפליקציה (לא דרך before_first_request)
+with app.app_context():
+    db.create_all()
 
 # Namespaces
 api.add_namespace(item_ns)
 api.add_namespace(items_ns)
 api.add_namespace(store_ns)
 api.add_namespace(stores_ns)
-
-# Create tables on first request
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 @api.errorhandler(ValidationError)
 def handle_validation_error(error):
